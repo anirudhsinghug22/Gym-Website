@@ -455,103 +455,46 @@ function initFolderGallery() {
 
     if (!gallery || !folderTrigger || !hintText) return;
 
-    // Open folder on click
-    folderTrigger.addEventListener('click', () => {
-        gallery.classList.add('folder-open');
-        hintText.textContent = 'Drag any photo down to close';
+    function closeFolder() {
+        if (gallery.classList.contains('folder-open')) {
+            gallery.classList.remove('folder-open');
+            hintText.textContent = 'Click folder to explore photos';
+            cards.forEach(c => {
+                c.style.transform = '';
+                c.style.zIndex = '';
+            });
+        }
+    }
+
+    // Toggle folder on click
+    folderTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (gallery.classList.contains('folder-open')) {
+            closeFolder();
+        } else {
+            gallery.classList.add('folder-open');
+            hintText.textContent = 'Scroll down to retract photos into folder';
+        }
     });
 
-    // Handle dragging on each card
-    cards.forEach((card, idx) => {
-        let startY = 0;
-        let currentY = 0;
-        let isDragging = false;
-        
-        // Define base transform styles for fanned out card (desktop reference)
-        const baseTransforms = [
-            'translateY(-130px) translateX(-300px) rotate(-12deg) scale(1.02)',
-            'translateY(-130px) translateX(-200px) rotate(-8deg) scale(1.04)',
-            'translateY(-135px) translateX(-100px) rotate(-4deg) scale(1.06)',
-            'translateY(-140px) translateX(0) rotate(0deg) scale(1.1)',
-            'translateY(-135px) translateX(100px) rotate(4deg) scale(1.06)',
-            'translateY(-130px) translateX(200px) rotate(8deg) scale(1.04)',
-            'translateY(-130px) translateX(300px) rotate(12deg) scale(1.02)'
-        ];
-
-        // Define mobile fanned out coordinates
-        const baseTransformsMobile = [
-            'translateY(-100px) translateX(-135px) rotate(-12deg) scale(0.92)',
-            'translateY(-100px) translateX(-90px) rotate(-8deg) scale(0.94)',
-            'translateY(-105px) translateX(-45px) rotate(-4deg) scale(0.96)',
-            'translateY(-110px) translateX(0) rotate(0deg) scale(1.0)',
-            'translateY(-105px) translateX(45px) rotate(4deg) scale(0.96)',
-            'translateY(-100px) translateX(90px) rotate(8deg) scale(0.94)',
-            'translateY(-100px) translateX(135px) rotate(12deg) scale(0.92)'
-        ];
-
-        function getActiveTransformBase() {
-            return window.innerWidth <= 768 ? baseTransformsMobile[idx] : baseTransforms[idx];
+    // Auto-retract photos into folder when user scrolls down
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        if (gallery.classList.contains('folder-open') && (currentScrollY - lastScrollY > 15 || Math.abs(currentScrollY - lastScrollY) > 40)) {
+            closeFolder();
         }
+        lastScrollY = currentScrollY;
+    }, { passive: true });
 
-        function onStart(e) {
-            if (!gallery.classList.contains('folder-open')) return;
-            isDragging = true;
-            startY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            card.style.transition = 'none'; // Disable transition during drag for 1:1 response
-            card.style.zIndex = '150'; // Bring dragged card to front
-
-            // Add mouse/touch movement listeners to window dynamically
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('mouseup', onEnd);
-            window.addEventListener('touchmove', onMove, { passive: false });
-            window.addEventListener('touchend', onEnd);
-        }
-
-        function onMove(e) {
-            if (!isDragging) return;
-            // Prevent page swipe scrolling on mobile while dragging cards
-            if (e.cancelable) e.preventDefault();
-
-            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            const deltaY = clientY - startY;
-
-            if (deltaY > 0) {
-                currentY = deltaY;
-                // Add vertical drag offset on top of the fanned transform base
-                card.style.transform = `${getActiveTransformBase()} translateY(${deltaY}px) rotate(${deltaY * 0.05}deg)`;
+    // Auto-close folder when scrolling away from gallery viewport
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                closeFolder();
             }
-        }
+        });
+    }, { threshold: 0.2 });
 
-        function onEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-            card.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
-            
-            // Clean up window listeners immediately when gesture ends
-            window.removeEventListener('mousemove', onMove);
-            window.removeEventListener('mouseup', onEnd);
-            window.removeEventListener('touchmove', onMove);
-            window.removeEventListener('touchend', onEnd);
-
-            if (currentY > 100) {
-                // Dragged down past threshold -> CLOSE FOLDER
-                gallery.classList.remove('folder-open');
-                hintText.textContent = 'Click folder to explore photos';
-                // Reset all card styles to default css stacks
-                cards.forEach(c => {
-                    c.style.transform = '';
-                    c.style.zIndex = '';
-                });
-            } else {
-                // Return to fanned out position
-                card.style.transform = getActiveTransformBase();
-                card.style.zIndex = '';
-            }
-            currentY = 0;
-        }
-
-        // Initialize start triggers only
-        card.addEventListener('mousedown', onStart);
-        card.addEventListener('touchstart', onStart, { passive: true });
-    });
+    observer.observe(gallery);
 }
