@@ -262,10 +262,15 @@ input, select, textarea {
     line-height: 1;
 }
 .logo-img {
-    height: 44px;
+    height: 48px;
     width: auto;
     object-fit: contain;
     display: block;
+    filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.35));
+    transition: transform 0.3s ease;
+}
+.logo-img:hover {
+    transform: scale(1.05);
 }
 
 /* Navigation Menu */
@@ -1474,7 +1479,7 @@ footer {
     gap: 20px;
 }
 .footer-left .logo-img {
-    height: 88px;
+    height: 64px;
 }
 .footer-left p {
     color: var(--text-gray);
