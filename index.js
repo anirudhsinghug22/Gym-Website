@@ -1,5 +1,5 @@
 // ==========================================================================
-// NEXTGEN FITNESS INTERACTIVE INTERFACE LOGIC
+// CHAMPIONS GYM INTERACTIVE INTERFACE LOGIC
 // ==========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
