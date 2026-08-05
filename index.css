@@ -1429,8 +1429,8 @@ label {
 
 .float-btn {
     position: relative;
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1440,44 +1440,38 @@ label {
     cursor: pointer;
 }
 
-/* Golden WhatsApp Button */
+/* Neon Green WhatsApp Button */
 .float-btn-whatsapp {
-    background: linear-gradient(135deg, #f7d978 0%, #d4a737 100%);
-    color: #0b0c0e;
-    box-shadow: 0 0 22px rgba(229, 193, 88, 0.5), 0 8px 24px rgba(0, 0, 0, 0.6);
-    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    background: linear-gradient(135deg, #9eff00 0%, #00e676 100%);
+    color: #050b04;
+    box-shadow: 0 8px 25px rgba(158, 255, 0, 0.45), 0 0 15px rgba(0, 230, 118, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     animation: floatingBob 3.6s ease-in-out 1.8s infinite;
-}
-.float-btn-whatsapp .float-icon {
-    width: 32px;
-    height: 32px;
-    fill: #0b0c0e;
 }
 .float-btn-whatsapp:hover {
     animation-play-state: paused;
-    transform: scale(1.14) translateY(-4px);
-    box-shadow: 0 0 32px rgba(247, 217, 120, 0.8), 0 12px 32px rgba(0, 0, 0, 0.7);
+    transform: scale(1.15) translateY(-4px);
+    box-shadow: 0 14px 38px rgba(158, 255, 0, 0.75), 0 0 28px rgba(0, 230, 118, 0.9);
+    filter: brightness(1.1);
 }
 
-/* Dark Glass Phone Dial Button */
+/* Neon Green Glass Phone Dial Button */
 .float-btn-phone {
-    background: #121316;
-    border: 2px solid #e5c158;
-    color: #e5c158;
-    box-shadow: 0 0 18px rgba(229, 193, 88, 0.35), 0 8px 24px rgba(0, 0, 0, 0.6);
+    background: rgba(10, 18, 10, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #9eff00;
+    border: 1px solid rgba(158, 255, 0, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(158, 255, 0, 0.35);
     animation: floatingBob 3.6s ease-in-out infinite;
-}
-.float-btn-phone .float-icon {
-    width: 26px;
-    height: 26px;
-    fill: #e5c158;
 }
 .float-btn-phone:hover {
     animation-play-state: paused;
-    transform: scale(1.14) translateY(-4px);
-    border-color: #f7d978;
-    color: #f7d978;
-    box-shadow: 0 0 28px rgba(247, 217, 120, 0.6), 0 12px 32px rgba(0, 0, 0, 0.8);
+    transform: scale(1.15) translateY(-4px);
+    border-color: #9eff00;
+    color: #ffffff;
+    background: rgba(158, 255, 0, 0.15);
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.9), 0 0 28px rgba(158, 255, 0, 0.7);
 }
 
 /* Continuous Floating Bobbing Keyframes */
@@ -1505,12 +1499,12 @@ label {
     font-weight: 700;
     padding: 8px 14px;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--gold-border);
+    border: 1px solid rgba(158, 255, 0, 0.4);
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
     transition: var(--transition);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.8), 0 0 10px rgba(158, 255, 0, 0.2);
 }
 
 .float-btn:hover .float-tooltip {
