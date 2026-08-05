@@ -1,500 +1,257 @@
-// ==========================================================================
-// CHAMPIONS GYM INTERACTIVE INTERFACE LOGIC
-// ==========================================================================
+/**
+ * REEFIT GYM - INTERACTIVE JAVASCRIPT
+ */
 
 document.addEventListener('DOMContentLoaded', () => {
-    initMobileNav();
-    initScrollRevealFallback();
-    initActiveNavLinkObserver();
-    initTestimonialsSlider();
-    initReviewModal();
-    initHeroParallax();
-    initDottedSurface();
-    initFolderGallery();
-});
+    // 0. Theme Toggle (Light & Dark Mode with Ripple Transition)
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('reefit-theme');
 
-/* ==========================================================================
-   MOBILE NAVIGATION MENU TOGGLE
-   ========================================================================== */
-function initMobileNav() {
-    const navToggle = document.getElementById('mobile-nav-toggle');
-    const navMenu = document.getElementById('nav-menu');
-    const navLinks = document.querySelectorAll('.nav-link');
+    if (savedTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
 
-    if (!navToggle || !navMenu) return;
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'light' ? 'dark' : 'light';
 
-    // Toggle menu visibility
-    navToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = navMenu.classList.toggle('open');
-        navToggle.classList.toggle('active');
-        navToggle.setAttribute('aria-expanded', isOpen);
-    });
+            // Smooth subtle icon spin feedback
+            themeToggleBtn.style.transform = 'scale(0.9) rotate(180deg)';
 
-    // Close menu when clicking navigation link
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            navMenu.classList.remove('open');
-            navToggle.classList.remove('active');
-            navToggle.setAttribute('aria-expanded', 'false');
-        });
-    });
+            if (targetTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('reefit-theme', 'light');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('reefit-theme', 'dark');
+            }
 
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
-            navMenu.classList.remove('open');
-            navToggle.classList.remove('active');
-            navToggle.setAttribute('aria-expanded', 'false');
-        }
-    });
-}
-
-/* ==========================================================================
-   SCROLL-DRIVEN ANIMATION FALLBACK
-   ========================================================================== */
-function initScrollRevealFallback() {
-    // Check if browser natively supports CSS scroll timelines
-    const supportsScrollTimeline = CSS.supports('(animation-timeline: view()) and (animation-range: entry)');
-    
-    if (!supportsScrollTimeline) {
-        const revealElements = document.querySelectorAll('.scroll-reveal');
-        
-        const observerOptions = {
-            root: null, // Viewport
-            rootMargin: '0px 0px -10% 0px', // Trigger slightly before entering fully
-            threshold: 0.05
-        };
-
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('scroll-reveal-visible');
-                    // Once visible, stop observing to optimize performance
-                    revealObserver.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        revealElements.forEach(el => {
-            el.classList.add('scroll-reveal-init');
-            revealObserver.observe(el);
+            setTimeout(() => {
+                themeToggleBtn.style.transform = '';
+            }, 400);
         });
     }
-}
 
-/* ==========================================================================
-   ACTIVE LINK SPY ON SCROLL
-   ========================================================================== */
-function initActiveNavLinkObserver() {
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-link');
+    // 1. Mobile Navigation Menu Toggle
+    const mobileToggle = document.getElementById('mobile-nav-toggle');
+    const navMenu = document.getElementById('nav-menu');
 
-    const spyObserver = new IntersectionObserver((entries) => {
+    if (mobileToggle && navMenu) {
+        mobileToggle.addEventListener('click', () => {
+            const isExpanded = mobileToggle.getAttribute('aria-expanded') === 'true';
+            mobileToggle.setAttribute('aria-expanded', !isExpanded);
+            navMenu.classList.toggle('active');
+        });
+
+        // Close menu on link click
+        navMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            });
+        });
+    }
+
+    // 2. Sticky Header Shadow on Scroll
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            header.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(212, 175, 55, 0.2)';
+        } else {
+            header.style.boxShadow = 'none';
+        }
+    });
+
+    // 3. Modal Overlay Logic
+    const modalOverlay = document.getElementById('modal-overlay');
+    const btnOpenModal = document.getElementById('btn-open-modal');
+    const heroBtnModal = document.getElementById('hero-btn-modal');
+    const btnTourModal = document.getElementById('btn-tour-modal');
+    const modalClose = document.getElementById('modal-close');
+    const modalPassForm = document.getElementById('modal-pass-form');
+    const modalSuccess = document.getElementById('modal-success');
+    const modalDoneBtn = document.getElementById('modal-done-btn');
+
+    function openModal(defaultGoal = 'Body Transformation') {
+        if (modalOverlay) {
+            modalOverlay.classList.add('active');
+            if (modalPassForm) modalPassForm.style.display = 'block';
+            if (modalSuccess) modalSuccess.style.display = 'none';
+            const goalSelect = document.getElementById('m-goal');
+            if (goalSelect) goalSelect.value = defaultGoal;
+        }
+    }
+
+    function closeModal() {
+        if (modalOverlay) {
+            modalOverlay.classList.remove('active');
+        }
+    }
+
+    if (btnOpenModal) btnOpenModal.addEventListener('click', () => openModal());
+    if (heroBtnModal) heroBtnModal.addEventListener('click', () => openModal());
+    if (btnTourModal) btnTourModal.addEventListener('click', () => openModal('Live Gym Tour'));
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+    }
+
+    if (modalPassForm) {
+        modalPassForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            modalPassForm.style.display = 'none';
+            if (modalSuccess) modalSuccess.style.display = 'block';
+        });
+    }
+
+    if (modalDoneBtn) {
+        modalDoneBtn.addEventListener('click', closeModal);
+    }
+
+    // 4. Plan Selection Trigger Modal
+    document.querySelectorAll('.btn-plan').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const planName = e.target.getAttribute('data-plan') || 'Membership Plan';
+            openModal(`Plan Enrollment: ${planName}`);
+        });
+    });
+
+    // 5. Section Contact Form
+    const freePassForm = document.getElementById('free-pass-form');
+    if (freePassForm) {
+        freePassForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('form-name').value;
+            alert(`Thank you, ${name}! Your Free Pass at Reefit Gym (Sector 46) has been reserved. Our team will contact you on your mobile number shortly!`);
+            freePassForm.reset();
+        });
+    }
+
+    // 6. Interactive BMI Calculator
+    const btnCalc = document.getElementById('btn-calculate-bmi');
+    const calcWeight = document.getElementById('calc-weight');
+    const calcHeight = document.getElementById('calc-height');
+    const calcResult = document.getElementById('calc-result');
+    const resBmiVal = document.getElementById('res-bmi-val');
+    const resStatusBadge = document.getElementById('res-status-badge');
+    const resAdvice = document.getElementById('res-advice');
+
+    if (btnCalc && calcWeight && calcHeight && calcResult) {
+        btnCalc.addEventListener('click', () => {
+            const weight = parseFloat(calcWeight.value);
+            const heightCm = parseFloat(calcHeight.value);
+
+            if (!weight || !heightCm || heightCm <= 0 || weight <= 0) {
+                alert('Please enter valid weight and height values.');
+                return;
+            }
+
+            const heightM = heightCm / 100;
+            const bmi = (weight / (heightM * heightM)).toFixed(1);
+
+            resBmiVal.textContent = bmi;
+            calcResult.style.display = 'block';
+
+            let status = 'Normal Weight';
+            let advice = 'You have a healthy body weight! Ashish Sir recommends focus on lean muscle building and progressive overload training at Reefit Gym.';
+            let badgeBg = 'rgba(74, 222, 128, 0.2)';
+
+            if (bmi < 18.5) {
+                status = 'Underweight';
+                advice = 'Ashish Sir recommends a targeted mass gain program with high-protein nutrition and heavy compound lifting to build dense muscle.';
+                badgeBg = 'rgba(250, 204, 21, 0.2)';
+            } else if (bmi >= 25 && bmi < 29.9) {
+                status = 'Overweight';
+                advice = 'Our Body Transformation Protocol at Reefit Gym will help you burn fat while retaining strength through high-intensity resistance training.';
+                badgeBg = 'rgba(251, 146, 60, 0.2)';
+            } else if (bmi >= 30) {
+                status = 'Obese';
+                advice = 'Personalized 1-on-1 coaching with Mr. Vishal or Ashish Sir is highly recommended to safely start your weight-loss transformation journey.';
+                badgeBg = 'rgba(248, 113, 113, 0.2)';
+            }
+
+            resStatusBadge.textContent = status;
+            resStatusBadge.style.background = badgeBg;
+            resAdvice.textContent = advice;
+        });
+    }
+
+    // 7. Google Reviews Filter Chips
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const reviewCards = document.querySelectorAll('.review-card');
+
+    filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            filterChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+
+            const filter = chip.getAttribute('data-filter');
+
+            reviewCards.forEach(card => {
+                const categories = card.getAttribute('data-category') || '';
+                if (filter === 'all' || categories.includes(filter)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    // 8. Premium Smooth Scroll Reveal (IntersectionObserver)
+    const revealTargets = document.querySelectorAll('.section-header, .glass-card, .plan-card, .review-card, .trainer-card, .about-text, .about-visual, .timing-row, .google-business-bar');
+
+    const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const sectionId = entry.target.getAttribute('id');
-                
-                navLinks.forEach(link => {
-                    if (link.getAttribute('href') === `#${sectionId}`) {
-                        link.classList.add('active');
-                    } else {
-                        link.classList.remove('active');
-                    }
-                });
+                entry.target.classList.add('is-revealed');
             }
         });
     }, {
         root: null,
-        rootMargin: '-40% 0px -50% 0px' // Focus on the middle of the viewport
+        threshold: 0.1,
+        rootMargin: '0px 0px -40px 0px'
     });
 
-    sections.forEach(section => spyObserver.observe(section));
-}
-
-/* ==========================================================================
-   TESTIMONIALS SLIDER
-   ========================================================================== */
-let currentSlide = 0;
-let slidesCount = 3;
-
-function initTestimonialsSlider() {
-    const track = document.getElementById('carousel-track');
-    const prevBtn = document.getElementById('carousel-prev');
-    const nextBtn = document.getElementById('carousel-next');
-    const dotsContainer = document.getElementById('carousel-dots');
-    
-    if (!track || !prevBtn || !nextBtn || !dotsContainer) return;
-
-    // Refresh slides status
-    updateSliderStatus();
-
-    prevBtn.addEventListener('click', () => {
-        if (currentSlide > 0) {
-            goToSlide(currentSlide - 1);
-        } else {
-            goToSlide(slidesCount - 1); // Wrap to last
-        }
+    revealTargets.forEach((el) => {
+        el.classList.add('reveal-on-scroll');
+        revealObserver.observe(el);
     });
 
-    nextBtn.addEventListener('click', () => {
-        if (currentSlide < slidesCount - 1) {
-            goToSlide(currentSlide + 1);
-        } else {
-            goToSlide(0); // Wrap to first
-        }
-    });
-
-    // Delegate dot clicks
-    dotsContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('dot')) {
-            const slideIndex = parseInt(e.target.getAttribute('data-slide'));
-            goToSlide(slideIndex);
-        }
-    });
-}
-
-function goToSlide(index) {
-    const track = document.getElementById('carousel-track');
-    const dots = document.querySelectorAll('#carousel-dots .dot');
-    
-    if (!track) return;
-    
-    currentSlide = index;
-    
-    // Shift track
-    const translation = -currentSlide * (100 / slidesCount);
-    track.style.transform = `translateX(${translation}%)`;
-    
-    // Update active dot
-    dots.forEach((dot, idx) => {
-        if (idx === currentSlide) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
-    });
-}
-
-function updateSliderStatus() {
-    const track = document.getElementById('carousel-track');
-    const dotsContainer = document.getElementById('carousel-dots');
-    if (!track || !dotsContainer) return;
-
-    const slides = track.querySelectorAll('.review-slide');
-    slidesCount = slides.length;
-    track.style.width = `${slidesCount * 100}%`;
-    slides.forEach(slide => {
-        slide.style.width = `${100 / slidesCount}%`;
-    });
-
-    // Rebuild dots
-    dotsContainer.innerHTML = '';
-    for (let i = 0; i < slidesCount; i++) {
-        const dot = document.createElement('span');
-        dot.classList.add('dot');
-        if (i === currentSlide) dot.classList.add('active');
-        dot.setAttribute('data-slide', i);
-        dotsContainer.appendChild(dot);
-    }
-}
-
-/* ==========================================================================
-   WRITE A REVIEW MODAL
-   ========================================================================== */
-function initReviewModal() {
-    const modal = document.getElementById('review-modal');
-    const openBtn = document.getElementById('open-review-modal');
-    const closeBtn = document.getElementById('close-review-modal');
-    const cancelBtn = document.getElementById('cancel-review');
-
-    if (!modal || !openBtn || !closeBtn || !cancelBtn) return;
-
-    openBtn.addEventListener('click', () => {
-        modal.showModal();
-    });
-
-    const closeModal = () => {
-        modal.close();
-        document.getElementById('review-form').reset();
-    };
-
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-
-    // Close when clicking backdrop outside dialog-content
-    modal.addEventListener('click', (e) => {
-        const rect = modal.getBoundingClientRect();
-        const isInDialog = (
-            rect.top <= e.clientY && 
-            e.clientY <= rect.top + rect.height && 
-            rect.left <= e.clientX && 
-            e.clientX <= rect.left + rect.width
-        );
-        if (!isInDialog) {
-            closeModal();
-        }
-    });
-}
-
-// Global submit handler for new reviews (called inline on form submit)
-window.handleNewReviewSubmit = function() {
-    const nameInput = document.getElementById('review-author-name');
-    const contentInput = document.getElementById('review-content-text');
-    const starsRadio = document.querySelector('input[name="rating"]:checked');
-    const track = document.getElementById('carousel-track');
-    const modal = document.getElementById('review-modal');
-
-    if (!nameInput || !contentInput || !track || !modal) return;
-
-    const authorName = nameInput.value.trim();
-    const reviewText = contentInput.value.trim();
-    const ratingValue = starsRadio ? parseInt(starsRadio.value) : 5;
-    
-    // Create star string
-    let starsString = '';
-    for (let i = 0; i < ratingValue; i++) {
-        starsString += '★';
-    }
-    for (let i = ratingValue; i < 5; i++) {
-        starsString += '☆';
-    }
-
-    // Create slide elements
-    const newSlide = document.createElement('div');
-    newSlide.classList.add('review-slide');
-    
-    newSlide.innerHTML = `
-        <div class="review-card">
-            <div class="review-stars">${starsString}</div>
-            <p class="review-text">"${reviewText}"</p>
-            <div class="review-author">
-                <div class="author-info">
-                    <h4>${authorName}</h4>
-                    <span>Google Reviewer • Just now</span>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Append to slide track
-    track.appendChild(newSlide);
-    
-    // Update slides counts and track sizes
-    updateSliderStatus();
-    
-    // Animate to the newly added review
-    goToSlide(slidesCount - 1);
-
-    // Close modal
-    modal.close();
-    document.getElementById('review-form').reset();
-    
-    alert('Thank you! Your review has been added to our testimonial slider.');
-};
-
-/* ==========================================================================
-   HERO IMAGE SCROLL PARALLAX FALLBACK
-   ========================================================================== */
-function initHeroParallax() {
-    const heroImage = document.querySelector('.hero-athlete-img');
-    if (!heroImage) return;
-
-    // Only apply JS parallax if browser doesn't support CSS scroll timelines
-    const supportsScrollTimeline = CSS.supports('(animation-timeline: scroll()) or (animation-timeline: view())');
-    
-    if (!supportsScrollTimeline) {
-        window.addEventListener('scroll', () => {
-            const scrollPos = window.scrollY;
-            if (scrollPos < 600) {
-                // Translate down slowly relative to scroll position (12% speed multiplier)
-                const translateVal = scrollPos * 0.12;
-                heroImage.style.transform = `translateY(${translateVal}px)`;
+    // Stagger grid child cards smoothly
+    document.querySelectorAll('.grid, .pricing-grid, .reviews-grid').forEach(grid => {
+        const children = grid.children;
+        Array.from(children).forEach((child, index) => {
+            if (child.classList.contains('reveal-on-scroll')) {
+                const delayClass = `reveal-delay-${(index % 4) + 1}`;
+                child.classList.add(delayClass);
             }
         });
-    }
-}
-
-/* ==========================================================================
-   DOTTED SURFACE WAVE BACKGROUND EFFECT (THREE.JS)
-   ========================================================================== */
-function initDottedSurface() {
-    const container = document.getElementById('dotted-surface-container');
-    if (!container || typeof THREE === 'undefined') return;
-
-    const SEPARATION = 150;
-    const AMOUNTX = 40;
-    const AMOUNTY = 60;
-
-    let scene, camera, renderer, particles;
-    let count = 0;
-    let animationId;
-
-    // Initialize Three.js setup
-    function init() {
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-
-        scene = new THREE.Scene();
-        // Fog color matches cta-banner bg-dark (#080808)
-        scene.fog = new THREE.Fog(0x080808, 2000, 10000);
-
-        camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000);
-        camera.position.set(0, 355, 1220);
-
-        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(width, height);
-        renderer.setClearColor(scene.fog.color, 0);
-
-        // Clear container if any existing canvas exists (prevent duplication)
-        container.innerHTML = '';
-        container.appendChild(renderer.domElement);
-
-        // Create particles positions and colors
-        const positions = [];
-        const colors = [];
-
-        const geometry = new THREE.BufferGeometry();
-
-        for (let ix = 0; ix < AMOUNTX; ix++) {
-            for (let iy = 0; iy < AMOUNTY; iy++) {
-                const x = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2;
-                const y = 0; // Will be animated
-                const z = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2;
-
-                positions.push(x, y, z);
-                
-                // Gym theme dark mode dots: Neon green accent colors (0.62, 1.0, 0.0)
-                colors.push(0.62, 1.0, 0.0);
-            }
-        }
-
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-        // Material matches size: 8, transparent: true
-        const material = new THREE.PointsMaterial({
-            size: 8,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.65,
-            sizeAttenuation: true
-        });
-
-        particles = new THREE.Points(geometry, material);
-        scene.add(particles);
-
-        // Start animating
-        animate();
-    }
-
-    // Animation Loop
-    function animate() {
-        animationId = requestAnimationFrame(animate);
-
-        const positionAttribute = particles.geometry.attributes.position;
-        const positions = positionAttribute.array;
-
-        let i = 0;
-        for (let ix = 0; ix < AMOUNTX; ix++) {
-            for (let iy = 0; iy < AMOUNTY; iy++) {
-                const index = i * 3;
-
-                // Animate Y position with sine waves
-                positions[index + 1] =
-                    Math.sin((ix + count) * 0.3) * 50 +
-                    Math.sin((iy + count) * 0.5) * 50;
-
-                i++;
-            }
-        }
-
-        positionAttribute.needsUpdate = true;
-
-        renderer.render(scene, camera);
-        count += 0.1;
-    }
-
-    // Resize Handler
-    function handleResize() {
-        if (!container || !renderer || !camera) return;
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
-    }
-
-    window.addEventListener('resize', handleResize);
-
-    // Initial load
-    init();
-
-    // Store cleanup listener for page lifecycle
-    window.addEventListener('beforeunload', () => {
-        window.removeEventListener('resize', handleResize);
-        if (animationId) cancelAnimationFrame(animationId);
-        if (particles) {
-            particles.geometry.dispose();
-            particles.material.dispose();
-        }
-        if (renderer) renderer.dispose();
-    });
-}
-
-/* ==========================================================================
-   INTERACTIVE FOLDER GALLERY GESTURES
-   ========================================================================== */
-function initFolderGallery() {
-    const gallery = document.querySelector('.interactive-folder-gallery');
-    const folderTrigger = document.getElementById('folder-front-trigger');
-    const hintText = document.getElementById('gallery-hint-text');
-    const cards = document.querySelectorAll('.photo-card');
-
-    if (!gallery || !folderTrigger || !hintText) return;
-
-    function closeFolder() {
-        if (gallery.classList.contains('folder-open')) {
-            gallery.classList.remove('folder-open');
-            hintText.textContent = 'Click folder to explore photos';
-            cards.forEach(c => {
-                c.style.transform = '';
-                c.style.zIndex = '';
-            });
-        }
-    }
-
-    // Toggle folder on click
-    folderTrigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (gallery.classList.contains('folder-open')) {
-            closeFolder();
-        } else {
-            gallery.classList.add('folder-open');
-            hintText.textContent = 'Scroll down to retract photos into folder';
-        }
     });
 
-    // Auto-retract photos into folder when user scrolls down
-    let lastScrollY = window.scrollY;
-    window.addEventListener('scroll', () => {
-        const currentScrollY = window.scrollY;
-        if (gallery.classList.contains('folder-open') && (currentScrollY - lastScrollY > 15 || Math.abs(currentScrollY - lastScrollY) > 40)) {
-            closeFolder();
-        }
-        lastScrollY = currentScrollY;
-    }, { passive: true });
+    // 9. Smooth Anchor Link Navigation Scrolling (Header Offset Aware)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const targetId = this.getAttribute('href');
+            if (targetId === '#' || targetId === '') return;
+            const targetEl = document.querySelector(targetId);
+            if (targetEl) {
+                e.preventDefault();
+                const headerOffset = 85;
+                const elementPosition = targetEl.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
-    // Auto-close folder when scrolling away from gallery viewport
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) {
-                closeFolder();
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
             }
         });
-    }, { threshold: 0.2 });
+    });
 
-    observer.observe(gallery);
-}
+    console.log('Reefit Gym Gold website scripts & scroll animations loaded successfully!');
+});
